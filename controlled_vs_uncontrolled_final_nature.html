@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An interactive, responsive React JS presentation explaining controlled and uncontrolled components, value vs defaultValue, re-rendering, comparison, use cases and viva questions.">
+<meta name="theme-color" content="#070b14">
+<title>Controlled vs Uncontrolled Components | React JS</title>
+
+<style>
+:root{
+  --bg:#070b14;
+  --surface:#101827;
+  --surface2:#172235;
+  --surface3:#1d2a40;
+  --border:#2b3850;
+  --text:#eef3ff;
+  --muted:#98a7c3;
+  --blue:#62a0ff;
+  --blue2:#203d70;
+  --orange:#ffad62;
+  --orange2:#56371b;
+  --green:#5ee39a;
+  --red:#ff7070;
+  --shadow:0 18px 45px rgba(0,0,0,.25);
+}
+:root.light{--bg:#f4f7fc;--surface:#fff;--surface2:#eef3fa;--surface3:#e4ebf5;--border:#d6dfec;--text:#172033;--muted:#62708a;--blue:#2563c7;--blue2:#dceaff;--orange:#c96b16;--orange2:#fff0df;--green:#168653;--red:#d63838;--shadow:0 16px 40px rgba(30,55,90,.12);}
+body,.card,.demo-shell,.stat,.q,.flow-card,table,nav,.note,.takeaway,#demoInput,pre,.log,.modebar{transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease;}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(98,160,255,.12),transparent 30%),
+    radial-gradient(circle at 90% 10%,rgba(255,173,98,.10),transparent 28%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  line-height:1.6;
+}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+.container{max-width:1120px;margin:auto;padding:0 22px}
+.theme-toggle{position:absolute;right:22px;top:22px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 13px;border-radius:999px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);}
+.theme-toggle:hover{transform:translateY(-2px)}
+
+/* ===== Animated Hero Landscape ===== */
+header{
+  overflow:hidden;
+  isolation:isolate;
+  min-height:clamp(430px,54vw,610px);
+  display:flex;
+  align-items:center;
+}
+header > .container{position:relative;z-index:4;width:100%}
+.hero-scene{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:
+    linear-gradient(to bottom,rgba(7,11,20,.10),rgba(7,11,20,.02) 45%,rgba(7,11,20,.28) 100%),
+    radial-gradient(circle at 50% 34%,rgba(88,133,196,.10),transparent 48%);
+  transition:background .6s ease,opacity .4s ease;
+}
+.hero-scene::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,transparent 55%,var(--bg) 100%);
+  opacity:.72;
+  z-index:8;
+}
+.hero-scene::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:radial-gradient(circle at 82% 24%,rgba(176,205,255,.18) 0,rgba(112,157,235,.10) 18%,transparent 46%);
+  opacity:.9;
+  transition:background .7s ease,opacity .7s ease;
+}
+.sky-stars{position:absolute;inset:0;opacity:.8;transition:opacity .6s ease}
+.sky-stars span{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:#fff;box-shadow:0 0 8px rgba(255,255,255,.85);
+  animation:twinkle 3.5s ease-in-out infinite;
+}
+.sky-stars span:nth-child(1){left:12%;top:19%;animation-delay:-.7s}
+.sky-stars span:nth-child(2){left:24%;top:11%;animation-delay:-2.2s}
+.sky-stars span:nth-child(3){left:39%;top:22%;animation-delay:-1.1s}
+.sky-stars span:nth-child(4){left:57%;top:13%;animation-delay:-2.8s}
+.sky-stars span:nth-child(5){left:73%;top:23%;animation-delay:-1.8s}
+.sky-stars span:nth-child(6){left:86%;top:14%;animation-delay:-.3s}
+.sky-stars span:nth-child(7){left:92%;top:31%;animation-delay:-2.4s}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.35)}}
+.celestial{
+  position:absolute;
+  width:clamp(58px,8vw,94px);height:clamp(58px,8vw,94px);
+  border-radius:50%;
+  top:11%;right:15%;
+  transition:opacity .7s ease,transform .7s ease,box-shadow .7s ease;
+  z-index:2;
+}
+.moon{
+  opacity:1;
+  background:radial-gradient(circle at 34% 30%,#fff 0 52%,#e6ebf5 74%,#cdd7e8 100%);
+  box-shadow:0 0 18px rgba(225,235,255,.9),0 0 55px rgba(156,190,255,.42),0 0 105px rgba(105,150,255,.20);
+  animation:moonPulse 5s ease-in-out infinite;
+}
+.moon::before,.moon::after{
+  content:"";position:absolute;border-radius:50%;background:rgba(147,158,178,.18)
+}
+.moon::before{width:14%;height:14%;left:25%;top:27%;box-shadow:25px 17px 0 rgba(147,158,178,.15),13px 40px 0 rgba(147,158,178,.12),38px 37px 0 rgba(147,158,178,.13)}
+.moon::after{width:8%;height:8%;left:61%;top:20%;box-shadow:-12px 31px 0 rgba(147,158,178,.12)}
+.sun{
+  opacity:0;transform:scale(.78);
+  background:radial-gradient(circle,#fff9c8 0 22%,#ffe26b 52%,#ffb52e 100%);
+  box-shadow:0 0 24px rgba(255,226,107,.95),0 0 70px rgba(255,193,56,.55),0 0 130px rgba(255,176,40,.28);
+  animation:sunPulse 4.5s ease-in-out infinite;
+}
+.sun::before{
+  content:"";position:absolute;inset:-38%;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(255,215,88,.18) 0 8deg,transparent 8deg 22deg);
+  animation:spinRays 28s linear infinite;
+}
+@keyframes moonPulse{50%{box-shadow:0 0 24px rgba(225,235,255,.95),0 0 70px rgba(156,190,255,.48),0 0 120px rgba(105,150,255,.22)}}
+@keyframes sunPulse{50%{box-shadow:0 0 30px rgba(255,226,107,1),0 0 85px rgba(255,193,56,.62),0 0 145px rgba(255,176,40,.32)}}
+@keyframes spinRays{to{transform:rotate(360deg)}}
+.cloud{
+  position:absolute;
+  width:clamp(130px,17vw,250px);
+  height:48px;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(250,253,255,.42),rgba(203,218,239,.20) 58%,rgba(168,190,220,.13));
+  border:1px solid rgba(255,255,255,.10);
+  filter:blur(.15px) drop-shadow(0 8px 12px rgba(35,55,85,.10));
+  z-index:4;
+  opacity:.78;
+  animation:cloudDrift 38s linear infinite;
+  will-change:transform;
+}
+.cloud::before,.cloud::after{
+  content:"";position:absolute;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.50),rgba(202,219,241,.18));
+  border:1px solid rgba(255,255,255,.08);
+}
+.cloud::before{width:64px;height:64px;left:18%;bottom:5px;box-shadow:34px 7px 0 -7px rgba(231,241,252,.35)}
+.cloud::after{width:82px;height:82px;left:47%;bottom:1px;box-shadow:-43px 19px 0 -17px rgba(229,239,250,.28),35px 20px 0 -15px rgba(220,233,247,.30)}
+.cloud-1{left:-22%;top:21%;animation-duration:44s}
+.cloud-2{left:25%;top:31%;transform:scale(.72);animation-duration:56s;animation-delay:-20s;opacity:.58}
+.cloud-3{left:72%;top:17%;transform:scale(.58);animation-duration:50s;animation-delay:-31s;opacity:.48}
+@keyframes cloudDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(145vw,0,0)}}
+.cloud-2{animation-name:cloudDriftSmall}
+.cloud-3{animation-name:cloudDriftTiny}
+@keyframes cloudDriftSmall{from{transform:translate3d(0,0,0) scale(.72)}to{transform:translate3d(145vw,0,0) scale(.72)}}
+@keyframes cloudDriftTiny{from{transform:translate3d(0,0,0) scale(.58)}to{transform:translate3d(145vw,0,0) scale(.58)}}
+.mountain{
+  position:absolute;left:-5%;right:-5%;bottom:19%;height:43%;
+  clip-path:polygon(0 100%,0 69%,8% 48%,15% 68%,24% 25%,34% 66%,43% 37%,52% 69%,63% 20%,74% 61%,84% 34%,93% 67%,100% 48%,100% 100%);
+  z-index:5;
+  transition:background .6s ease,filter .6s ease;
+}
+.mountain.back{background:linear-gradient(145deg,#26334c,#172338 65%,#101a2a);opacity:.82;bottom:23%;height:39%;filter:brightness(.92)}
+.mountain.front{background:linear-gradient(155deg,#1b273c,#0e1828 68%,#09111d);clip-path:polygon(0 100%,0 76%,11% 57%,21% 70%,31% 42%,43% 73%,53% 51%,64% 73%,75% 38%,87% 70%,100% 55%,100% 100%);opacity:.98}
+.river{
+  position:absolute;left:22%;right:22%;bottom:-5%;height:32%;
+  background:linear-gradient(180deg,rgba(73,125,176,.16),rgba(41,101,157,.44) 35%,rgba(19,65,111,.82));
+  clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+  z-index:6;
+  overflow:hidden;
+}
+.river::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(165deg,transparent 0 15px,rgba(255,255,255,.14) 16px 18px,transparent 19px 32px);
+  opacity:.55;animation:waterShimmer 5s linear infinite;
+}
+.river::after{
+  content:"";
+  position:absolute;
+  top:-8%;left:34%;width:32%;height:115%;
+  background:linear-gradient(180deg,rgba(207,227,255,.32),rgba(132,181,244,.10) 50%,transparent);
+  filter:blur(7px);
+  opacity:.8;
+  animation:riverLight 4.5s ease-in-out infinite;
+}
+@keyframes riverLight{0%,100%{transform:translateX(-7%) scaleX(.9);opacity:.55}50%{transform:translateX(7%) scaleX(1.1);opacity:.95}}
+@keyframes waterShimmer{to{transform:translateY(30px)}}
+.tree{
+  position:absolute;bottom:17%;width:clamp(48px,6vw,86px);height:clamp(105px,14vw,190px);z-index:7;
+  transform-origin:50% 100%;
+  animation:treeSway 4.2s ease-in-out infinite;
+}
+.tree .trunk{position:absolute;left:44%;bottom:0;width:12%;height:47%;border-radius:8px;background:linear-gradient(90deg,#3d291d,#745033,#2e211b)}
+.tree .leaf{position:absolute;border-radius:50%;background:linear-gradient(145deg,#426b48,#183b2a 78%);box-shadow:inset -8px -8px 16px rgba(0,0,0,.18)}
+.tree .leaf:nth-child(1){width:66%;height:45%;left:6%;top:16%}
+.tree .leaf:nth-child(2){width:72%;height:48%;left:25%;top:5%}
+.tree .leaf:nth-child(3){width:66%;height:43%;left:19%;top:29%}
+.tree .leaf::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:rgba(111,174,93,.7);left:28%;top:27%;box-shadow:22px 12px 0 rgba(91,154,80,.65),-5px 24px 0 rgba(98,163,83,.55)}
+.tree-1{left:4%;animation-delay:-1.1s}.tree-2{left:15%;transform:scale(.72);animation-delay:-2.8s}.tree-3{right:13%;transform:scale(.78);animation-delay:-.6s}.tree-4{right:3%;transform:scale(1.08);animation-delay:-3.4s}
+@keyframes treeSway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(2.2deg)}}
+.tree-2,.tree-3{animation-name:treeSwaySmall}
+@keyframes treeSwaySmall{0%,100%{transform:scale(.78) rotate(-1deg)}50%{transform:scale(.78) rotate(2deg)}}
+.tree-4{animation-name:treeSwayLarge}
+@keyframes treeSwayLarge{0%,100%{transform:scale(1.08) rotate(-1deg)}50%{transform:scale(1.08) rotate(2.5deg)}}
+.haze{position:absolute;left:-5%;right:-5%;bottom:18%;height:18%;background:linear-gradient(to top,rgba(173,203,226,.08),transparent);filter:blur(7px);z-index:7}
+:root.light .hero-scene::after{
+  background:radial-gradient(circle at 82% 24%,rgba(255,224,125,.28) 0,rgba(255,197,80,.13) 18%,transparent 46%);
+}
+:root.light .river::after{
+  background:linear-gradient(180deg,rgba(255,235,159,.48),rgba(255,215,110,.14) 50%,transparent);
+}
+:root.light .hero-scene{
+  background:
+    linear-gradient(to bottom,rgba(255,250,230,.05),rgba(255,255,255,.03) 48%,rgba(21,58,89,.10) 100%),
+    radial-gradient(circle at 50% 30%,rgba(255,213,105,.16),transparent 48%);
+}
+:root.light .sky-stars{opacity:0}
+:root.light .moon{opacity:0;transform:scale(.78)}
+:root.light .sun{opacity:1;transform:scale(1)}
+:root.light .cloud{
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(236,243,250,.72) 62%,rgba(206,220,235,.52));
+  border-color:rgba(255,255,255,.72);
+  box-shadow:0 10px 26px rgba(68,92,120,.14);
+  opacity:.86;
+}
+:root.light .mountain.back{background:linear-gradient(145deg,#8aa1b8,#6f859e 68%,#536b84);filter:none;opacity:.72}
+:root.light .mountain.front{background:linear-gradient(155deg,#526c83,#344e66 72%,#293f55)}
+:root.light .river{background:linear-gradient(180deg,rgba(104,176,221,.20),rgba(49,135,191,.55) 45%,rgba(30,96,149,.72))}
+:root.light .tree .leaf{background:linear-gradient(145deg,#5e9853,#245c38 78%)}
+:root.light .haze{background:linear-gradient(to top,rgba(255,255,255,.34),transparent)}
+@media(max-width:700px){
+  header{min-height:500px}
+  .celestial{right:11%;top:12%;width:62px;height:62px}
+  .cloud-2{top:31%}
+  .mountain{bottom:16%;height:39%}
+  .mountain.back{bottom:20%;height:34%}
+  .river{left:14%;right:14%;height:28%}
+  .tree{bottom:14%}
+  .tree-2{left:10%}.tree-3{right:10%}
+}
+@media(max-width:420px){
+  header{min-height:470px}
+  .celestial{right:10%;top:10%;width:54px;height:54px}
+  .cloud{height:28px;width:100px}
+  .mountain{height:34%;bottom:15%}
+  .mountain.back{height:30%;bottom:19%}
+  .river{left:10%;right:10%;height:25%}
+  .tree{bottom:12%;transform:scale(.72)}
+  .tree-2,.tree-3{transform:scale(.58)}
+  .tree-4{transform:scale(.78)}
+  .tree-2{left:4%}.tree-3{right:4%}
+}
+
+/* ===== Expanded animated nature scene ===== */
+.nature-life{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.day-life,.night-life{transition:opacity .7s ease,visibility .7s ease}
+.day-life{opacity:1;visibility:visible}
+.night-life{opacity:0;visibility:hidden}
+:root.light .day-life{opacity:1;visibility:visible}
+:root:not(.light) .fish,.fish-splash{opacity:0!important;visibility:hidden}
+:root.light .night-life{opacity:0;visibility:hidden}
+
+/* Extra trees: layered silhouettes give the landscape more depth. */
+.tree.extra{z-index:7;bottom:15%;transform-origin:50% 100%;animation:treeSwayExtra 4.8s ease-in-out infinite}
+.tree-extra-1{left:22%;transform:scale(.55);animation-delay:-1.9s}
+.tree-extra-2{left:31%;transform:scale(.42);animation-delay:-3.1s}
+.tree-extra-3{right:25%;transform:scale(.48);animation-delay:-.8s}
+.tree-extra-4{right:18%;transform:scale(.66);animation-delay:-2.4s}
+.tree-extra-5{right:7%;transform:scale(.50);animation-delay:-3.7s}
+@keyframes treeSwayExtra{0%,100%{rotate:-1deg}50%{rotate:1.8deg}}
+
+/* Hut beside the river. */
+.hut{position:absolute;left:56%;bottom:20%;width:clamp(72px,10vw,135px);height:clamp(58px,7vw,92px);z-index:7;filter:drop-shadow(0 8px 8px rgba(0,0,0,.18));animation:hutFloat 7s ease-in-out infinite}
+.hut-body{position:absolute;left:10%;bottom:0;width:80%;height:58%;border-radius:5px;background:linear-gradient(145deg,#9a6a3d,#604027);border:2px solid rgba(45,28,17,.5)}
+.hut-roof{position:absolute;left:2%;top:3%;width:96%;height:48%;background:linear-gradient(160deg,#70472d,#3b281e);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:8px}
+.hut-door{position:absolute;left:43%;bottom:0;width:20%;height:43%;background:#32251e;border-radius:5px 5px 0 0}
+.hut-window{position:absolute;left:18%;bottom:24%;width:18%;height:22%;background:#ffd77a;box-shadow:inset 0 0 8px rgba(255,208,92,.7);border:2px solid #4a3424}
+.hut-window::after{content:"";position:absolute;left:47%;top:0;width:2px;height:100%;background:#4a3424}
+.hut-smoke{position:absolute;left:70%;top:-12%;width:18px;height:50px;border-radius:50%;background:rgba(225,232,240,.18);filter:blur(5px);animation:smokeRise 5s ease-out infinite}
+@keyframes smokeRise{0%{opacity:0;transform:translateY(15px) scale(.7)}25%{opacity:.6}100%{opacity:0;transform:translate(12px,-65px) scale(1.5)}}
+@keyframes hutFloat{50%{transform:translateY(-1px)}}
+
+/* Birds: two simple V-shaped silhouettes moving across the sky. */
+.bird{position:absolute;width:30px;height:14px;z-index:6;animation:birdFly 19s linear infinite;opacity:.78}
+.bird::before,.bird::after{content:"";position:absolute;top:5px;width:16px;height:3px;border-radius:99px;background:currentColor;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.bird::before{left:0;transform:rotate(22deg);transform-origin:right center}
+.bird::after{right:0;transform:rotate(-22deg);transform-origin:left center}
+.bird-1{left:-5%;top:16%;color:#24344d;animation-duration:21s}
+.bird-2{left:25%;top:25%;transform:scale(.7);color:#34445d;animation-duration:27s;animation-delay:-9s}
+.bird-3{left:58%;top:12%;transform:scale(.55);color:#26364e;animation-duration:24s;animation-delay:-14s}
+.bird-4{left:78%;top:29%;transform:scale(.8);color:#34445d;animation-duration:31s;animation-delay:-20s}
+@keyframes birdFly{0%{translate:-10vw 0}45%{translate:55vw -10px}70%{translate:105vw 4px}100%{translate:125vw -8px}}
+:root:not(.light) .bird{color:#dbe8ff;opacity:.75}
+
+/* Daytime wildlife. */
+.deer{position:absolute;width:92px;height:72px;z-index:8;transform-origin:50% 100%;animation:deerBreath 3.6s ease-in-out infinite}
+/* More natural deer detailing */
+.deer .body::after{content:"";position:absolute;right:7%;top:18%;width:18%;height:30%;border-radius:50%;background:rgba(232,194,137,.22);filter:blur(1px)}
+.deer .spot{position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(235,202,151,.62);box-shadow:0 0 1px rgba(255,240,210,.35)}
+.deer .spot.s1{left:34%;top:22%}.deer .spot.s2{left:48%;top:34%}.deer .spot.s3{left:59%;top:18%}.deer .spot.s4{left:42%;top:55%}
+.deer .eye{position:absolute;right:5%;top:24%;width:3px;height:3px;border-radius:50%;background:#17120e;box-shadow:0 0 2px rgba(255,255,255,.7)}
+.deer .muzzle{position:absolute;right:-5%;bottom:4%;width:34%;height:42%;border-radius:55% 65% 60% 45%;background:#9b6a43;box-shadow:inset -2px -2px 3px rgba(45,24,13,.18)}
+.deer .muzzle::after{content:"";position:absolute;right:10%;top:35%;width:5px;height:4px;border-radius:50%;background:#21160f}
+.deer .leg i{position:absolute;bottom:-2px;left:-1px;width:8px;height:5px;border-radius:2px 2px 4px 4px;background:#342218}
+.deer .antler{width:20px;height:22px;border-left:2px solid #4a3121;border-top:1px solid transparent}
+.deer .antler::before,.deer .antler::after{width:9px;border-top-width:2px}
+.deer .antler::before{top:5px}.deer .antler::after{top:11px}
+.deer .ear{box-shadow:inset -2px -1px 0 rgba(38,20,12,.25)}
+
+.deer .body{position:absolute;left:20%;bottom:18%;width:55%;height:34%;border-radius:48% 55% 45% 45%;background:linear-gradient(145deg,#a56f42,#684326);box-shadow:inset -7px -5px 8px rgba(30,18,10,.18)}
+.deer .neck{position:absolute;left:55%;bottom:36%;width:15%;height:43%;border-radius:70% 70% 30% 30%;background:#7c4f2f;transform:rotate(-18deg)}
+.deer .head{position:absolute;left:63%;bottom:67%;width:25%;height:20%;border-radius:55% 45% 55% 45%;background:#8d5b35;transform:rotate(-8deg)}
+.deer .ear{position:absolute;width:11px;height:7px;border-radius:100% 0 100% 0;background:#704529;top:-5px}
+.deer .ear.one{left:5px;transform:rotate(-30deg)}.deer .ear.two{left:17px;transform:rotate(28deg)}
+.deer .leg{position:absolute;bottom:0;width:6px;height:31%;border-radius:5px;background:#593821;transform-origin:top center}
+.deer .leg.l1{left:29%;rotate:2deg}.deer .leg.l2{left:39%;rotate:-2deg}.deer .leg.l3{left:57%;rotate:3deg}.deer .leg.l4{left:66%;rotate:-3deg}
+.deer .tail{position:absolute;left:15%;bottom:45%;width:17px;height:10px;border-radius:90% 20% 20% 90%;background:#c49361;rotate:-20deg}
+.deer .antler{position:absolute;left:76%;bottom:83%;width:18px;height:17px;border-left:2px solid #5c3c26;rotate:-20deg}
+.deer .antler::before,.deer .antler::after{content:"";position:absolute;left:-2px;width:8px;border-top:2px solid #5c3c26;rotate:35deg}
+.deer .antler::before{top:5px}.deer .antler::after{top:10px}
+.deer-1{left:28%;bottom:17%;scale:.92;rotate:-3deg}
+.deer-2{left:36%;bottom:16%;scale:.68;animation-delay:-1.7s;rotate:4deg;opacity:.92}
+@keyframes deerBreath{50%{transform:translateY(-1px) scaleY(1.012)}}
+.deer-drink{animation:deerDrink 4.8s ease-in-out infinite}
+.deer-drink .neck{transform:rotate(32deg);transform-origin:bottom center}
+.deer-drink .head{transform:rotate(34deg) translate(5px,-1px);transform-origin:left center}
+@keyframes deerDrink{0%,100%{transform:rotate(0)}50%{transform:rotate(3deg) translateY(2px)}}
+.deer-drink::after{content:"";position:absolute;right:-1px;bottom:16%;width:28px;height:7px;border-top:2px solid rgba(210,239,255,.45);border-radius:50%;animation:drinkRipple 2.8s ease-in-out infinite}
+@keyframes drinkRipple{0%,100%{transform:scaleX(.55);opacity:.2}50%{transform:scaleX(1.15);opacity:.72}}
+
+
+
+
+/* Wildlife belongs to daytime only: at night it completely disappears. */
+:root:not(.light) .day-life{opacity:0;visibility:hidden}
+:root.light .day-life{opacity:1;visibility:visible}
+:root:not(.light) .fish,.fish-splash{opacity:0!important;visibility:hidden}
+
+/* Small water splashes where fish return to the river. */
+.fish-splash{position:absolute;z-index:8;width:24px;height:9px;border-top:2px solid rgba(210,239,255,.75);border-radius:50%;opacity:0;animation:splash 4.2s ease-out infinite;pointer-events:none}
+.fish-splash.s1{left:47%;bottom:18%;animation-delay:-.9s}
+.fish-splash.s2{left:62%;bottom:15%;animation-delay:-2.5s;scale:.8}
+.fish-splash.s3{left:55%;bottom:21%;animation-delay:-3s;scale:.65}
+@keyframes splash{0%,68%{opacity:0;transform:scale(.3)}72%{opacity:.85;transform:scale(1)}100%{opacity:0;transform:translateY(5px) scale(1.45)}}
+:root:not(.light) .fish-splash{opacity:0!important;visibility:hidden}
+
+/* Night camp: fire, logs and a seated person. */
+.camp{position:absolute;left:61%;bottom:17%;width:125px;height:105px;z-index:9}
+.fire{position:absolute;left:42px;bottom:7px;width:42px;height:54px;filter:drop-shadow(0 0 12px rgba(255,151,42,.65));animation:fireGlow 1.7s ease-in-out infinite}
+.flame{position:absolute;bottom:0;left:8px;width:28px;height:45px;border-radius:65% 35% 65% 35%;background:linear-gradient(180deg,#fff2a2,#ffb33f 48%,#f05b2f 100%);rotate:12deg;animation:flameDance .8s ease-in-out infinite alternate}
+.flame.small{left:19px;width:17px;height:29px;background:linear-gradient(180deg,#fff9c7,#ffd34d 55%,#ff6a2e);rotate:-14deg;animation-delay:-.25s}
+.camp-log{position:absolute;bottom:3px;width:48px;height:9px;border-radius:99px;background:#58331f;box-shadow:inset 0 0 0 2px rgba(255,177,85,.12)}
+.log.a{left:24px;rotate:14deg}.log.b{left:45px;rotate:-18deg}
+.man{position:absolute;left:3px;bottom:9px;width:35px;height:72px;animation:manBreathe 3.5s ease-in-out infinite}
+.man .head{position:absolute;left:12px;top:0;width:12px;height:12px;border-radius:50%;background:#25212a}
+.man .body{position:absolute;left:7px;top:14px;width:22px;height:29px;border-radius:45% 45% 25% 25%;background:#25212a;rotate:-8deg}
+.man .arm{position:absolute;left:21px;top:20px;width:24px;height:6px;border-radius:99px;background:#25212a;rotate:25deg;transform-origin:left center}
+.man .leg{position:absolute;left:10px;bottom:4px;width:24px;height:7px;border-radius:7px;background:#25212a;rotate:8deg;transform-origin:left center}
+.man .leg.r{left:7px;bottom:12px;width:22px;rotate:-32deg}
+@keyframes flameDance{to{transform:scale(1.08) rotate(7deg) translateY(-2px)}}
+@keyframes fireGlow{50%{filter:drop-shadow(0 0 18px rgba(255,151,42,.82))}}
+@keyframes manBreathe{50%{transform:translateY(-1px)}}
+:root.light .camp{opacity:0}
+
+/* Night sky: multi-colour twinkling stars. */
+.night-stars{position:absolute;inset:0;z-index:1}
+.night-stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px currentColor;animation:starTwinkle 2.8s ease-in-out infinite}
+.night-stars i:nth-child(1){left:8%;top:12%;color:#9ed7ff}.night-stars i:nth-child(2){left:18%;top:25%;color:#ffd77a;animation-delay:-1s}.night-stars i:nth-child(3){left:30%;top:10%;color:#d6b4ff;animation-delay:-1.7s}.night-stars i:nth-child(4){left:43%;top:20%;color:#9fffd0;animation-delay:-.4s}.night-stars i:nth-child(5){left:52%;top:9%;color:#ffb6d9;animation-delay:-2.2s}.night-stars i:nth-child(6){left:64%;top:27%;color:#a7c8ff;animation-delay:-1.4s}.night-stars i:nth-child(7){left:75%;top:10%;color:#ffe28c;animation-delay:-.8s}.night-stars i:nth-child(8){left:89%;top:18%;color:#c7b2ff;animation-delay:-2.5s}.night-stars i:nth-child(9){left:94%;top:33%;color:#9eeeff;animation-delay:-1.2s}.night-stars i:nth-child(10){left:36%;top:31%;color:#ffca91;animation-delay:-.2s}
+@keyframes starTwinkle{0%,100%{opacity:.25;transform:scale(.65)}50%{opacity:1;transform:scale(1.5)}}
+:root.light .night-stars{opacity:0}
+
+/* Extra depth in daylight. */
+:root.light .hut-body{background:linear-gradient(145deg,#b98049,#78502f)}
+:root.light .hut-roof{background:linear-gradient(160deg,#8b5833,#523524)}
+:root.light .river::before{opacity:.7}
+
+@media(max-width:700px){
+  .hut{left:58%;bottom:18%;scale:.78}
+  .camp{left:60%;bottom:15%;scale:.72}
+  .deer{scale:.68}
+  .deer-1{left:25%;bottom:16%}.deer-2{left:34%;bottom:15%}
+  .fish-1{left:43%}.fish-2{left:58%}.fish-3{left:52%}
+  .tree-extra-1{left:25%}.tree-extra-2{left:34%}.tree-extra-3{right:27%}.tree-extra-4{right:16%}.tree-extra-5{right:4%}
+}
+@media(max-width:420px){
+  .hut{left:55%;bottom:17%;scale:.58}
+  .camp{left:57%;bottom:14%;scale:.56}
+  .deer{scale:.52}
+  .deer-1{left:23%;bottom:15%}.deer-2{left:31%;bottom:14%}
+  .bird{scale:.72}
+  .tree.extra{scale:.48}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-scene *{animation:none!important}
+  .hero-scene *{transition:none!important}
+  .hero-scene .bird{translate:0 0!important}
+  .hero-scene .fish{opacity:1!important}
+}
+
+header{position:relative;
+  padding:70px 0 42px;
+  text-align:center;
+}
+.badge{
+  display:inline-block;
+  padding:7px 13px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  color:var(--muted);
+  background:rgba(255,255,255,.03);
+  font:700 .76rem ui-monospace,monospace;
+  letter-spacing:.12em;
+}
+h1{
+  font-size:clamp(2.2rem,6vw,4.5rem);
+  line-height:1.02;
+  letter-spacing:-.045em;
+  margin:18px 0 14px;
+}
+.gradient{
+  background:linear-gradient(90deg,var(--blue),#fff,var(--orange));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.subtitle{
+  max-width:720px;
+  margin:auto;
+  color:var(--muted);
+  font-size:1.08rem;
+}
+.team{
+  margin-top:20px;
+  color:#c4cee1;
+  font-size:.9rem;
+}
+nav{
+  width:100%;
+  position:relative;
+  z-index:1000;
+  background:rgba(7,11,20,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+}
+/* The navbar starts in its normal document position. Once that position reaches
+   the top of the viewport, JavaScript adds .is-fixed and it stays there for the
+   rest of the page. The spacer prevents any layout jump. */
+#navSpacer{display:none;height:0}
+nav.is-fixed{
+  position:fixed;
+  left:0;
+  right:0;
+  top:0;
+  width:100%;
+  z-index:1000;
+}
+#navSpacer.is-active{display:block}
+:root.light nav{background:rgba(248,251,255,.96);box-shadow:0 8px 24px rgba(30,55,90,.12)}
+:root.light nav.is-fixed{box-shadow:0 8px 24px rgba(30,55,90,.12)}
+.nav-inner{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:10px clamp(16px,3vw,42px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-inner a{
+  white-space:nowrap;
+  padding:8px 12px;
+  border-radius:8px;
+  color:var(--muted);
+  font-size:.88rem;
+}
+.nav-inner a:hover{background:transparent;color:var(--muted)}
+/* Hover styling is only enabled on devices that actually have hover.
+   This prevents mobile browsers from keeping a second nav item looking highlighted
+   after a tap. */
+@media (hover:hover) and (pointer:fine){
+  .nav-inner a:hover{background:var(--surface2);color:var(--text)}
+  .nav-inner a.active:hover{color:#fff}
+  :root.light .nav-inner a.active:hover{color:#12366b;background:#dbeafe}
+}
+
+section{padding:62px 0;border-bottom:1px solid var(--border)}
+.eyebrow{
+  color:var(--muted);
+  font:700 .75rem ui-monospace,monospace;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+}
+h2{font-size:clamp(1.7rem,3vw,2.35rem);margin:7px 0 8px}
+h3{margin:0 0 8px}
+.lead{color:#c5cee0;max-width:780px}
+
+.hero-grid,.demo-grid,.cards,.flow,.usecases,.proscons{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin-top:24px;
+}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.025),transparent),var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+.controlled{border-top:4px solid var(--blue)}
+.uncontrolled{border-top:4px solid var(--orange)}
+.controlled h3{color:var(--blue)}
+.uncontrolled h3{color:var(--orange)}
+
+.pill{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:999px;
+  background:var(--surface2);
+  color:var(--muted);
+  font-size:.75rem;
+  margin:3px 3px 0 0;
+}
+ul,ol{color:#c6d0e3}
+li{margin:7px 0}
+
+.demo-shell{
+  margin-top:28px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.modebar{
+  display:flex;
+  padding:10px;
+  gap:8px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+}
+.modebar button{
+  flex:1;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  padding:12px;
+  border-radius:10px;
+  font-weight:800;
+}
+.modebar button.active.c{
+  background:var(--blue2);
+  border-color:var(--blue);
+  color:var(--blue);
+}
+.modebar button.active.u{
+  background:var(--orange2);
+  border-color:var(--orange);
+  color:var(--orange);
+}
+.demo-body{padding:24px}
+.demo-label{color:var(--muted);font-size:.86rem;margin-bottom:7px}
+#demoInput{
+  width:100%;
+  padding:14px 15px;
+  background:#080d17;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:10px;
+  outline:none;
+}
+#demoInput:focus{border-color:var(--demo-accent)}
+/* Live Demo has its own dynamic accent: blue = Controlled, orange = Uncontrolled. */
+.demo-shell{--demo-accent:var(--blue);--demo-accent-soft:var(--blue2);}
+.demo-shell.mode-uncontrolled{--demo-accent:var(--orange);--demo-accent-soft:var(--orange2);}
+.demo-shell .btn.primary{background:var(--demo-accent);}
+.demo-shell .modebar button.active.c{background:var(--blue2);border-color:var(--blue);color:var(--blue)}
+.demo-shell .modebar button.active.u{background:var(--orange2);border-color:var(--orange);color:var(--orange)}
+.demo-shell #demoInput:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--demo-accent) 18%,transparent);}
+.demo-shell .stat strong{color:var(--demo-accent);}
+.demo-shell .log{border-color:color-mix(in srgb,var(--demo-accent) 48%,var(--border));}
+.demo-shell .log div{border-bottom-color:color-mix(in srgb,var(--demo-accent) 42%,var(--border));}
+.demo-shell .log .event{color:var(--demo-accent);}
+.demo-shell + .demo-note{--note-accent:var(--demo-accent);border-left-color:var(--note-accent);}
+.demo-shell + .demo-note b{color:var(--note-accent);}
+.demo-actions{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+.btn{
+  border:0;border-radius:9px;padding:10px 15px;font-weight:800;
+}
+.btn.primary{background:var(--blue);color:#07101f}
+.btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn.orange{background:var(--orange);color:#211307}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:20px;
+}
+.stat{
+  padding:14px;
+  border-radius:11px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+}
+.stat small{
+  display:block;color:var(--muted);font-size:.7rem;
+  text-transform:uppercase;letter-spacing:.08em
+}
+.stat strong{display:block;font-size:1.3rem;margin-top:3px}
+#renderCount{color:var(--blue)}
+#knownValue{color:var(--green)}
+#domValue{color:var(--orange)}
+
+.log{
+  margin-top:18px;
+  min-height:92px;
+  max-height:180px;
+  overflow:auto;
+  padding:12px;
+  background:#080d17;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font: .8rem ui-monospace,monospace;
+}
+.log div{padding:5px 0;border-bottom:1px dashed #26334a;color:var(--muted)}
+.log .event{color:var(--green)}
+.empty{color:var(--muted);font-style:italic}
+
+.flow-card{
+  text-align:center;
+  padding:22px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:15px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.flow-step{
+  display:block;
+  width:min(100%,320px);
+  box-sizing:border-box;
+  padding:11px 14px;
+  border-radius:10px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  margin:0;
+}
+.arrow{
+  color:var(--muted);
+  font-size:1.35rem;
+  line-height:1;
+  margin:2px 0;
+}
+.flow-card.c .flow-step{border-color:#315991}
+.flow-card.u .flow-step{border-color:#765025}
+
+pre{
+  overflow:auto;
+  background:#080d17;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+  color:#d8e2f4;
+  font: .82rem/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#c3e88d}.tag{color:#f07178}
+.note{
+  padding:15px 17px;
+  border-left:3px solid var(--blue);
+  background:var(--surface2);
+  border-radius:0 10px 10px 0;
+  color:#cbd5e8;
+}
+.warning{border-left-color:var(--orange)}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:22px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+th,td{
+  padding:13px 14px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+}
+th{color:var(--muted);font-size:.76rem;text-transform:uppercase}
+td:first-child{color:#e8edf8;font-weight:700}
+td.c{color:var(--blue)}
+td.u{color:var(--orange)}
+
+.q{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:17px;
+}
+.q strong{display:block;margin-bottom:6px}
+.answer{color:var(--muted)}
+
+.takeaway{
+  text-align:center;
+  padding:30px;
+  background:linear-gradient(135deg,var(--blue2),var(--orange2));
+  border:1px solid var(--border);
+  border-radius:18px;
+}
+.takeaway h2{margin-top:0}
+
+footer{
+  text-align:center;
+  padding:45px 0 65px;
+  color:var(--muted);
+  font-size:.85rem;
+}
+
+.reveal{opacity:0;transform:translateY(55px) scale(.985);filter:blur(2px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1),filter .75s ease;transition-delay:var(--delay,0ms);will-change:opacity,transform,filter}
+.reveal.visible{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+.reveal.scroll-hide{opacity:0;transform:translateY(45px) scale(.985);filter:blur(2px)}
+.reveal.visible .flow-step{animation:popIn .55s cubic-bezier(.22,1,.36,1) both}
+.reveal.visible .flow-step:nth-child(2){animation-delay:70ms}
+.reveal.visible .flow-step:nth-child(3){animation-delay:140ms}
+.reveal.visible .flow-step:nth-child(4){animation-delay:210ms}
+.reveal.visible .flow-step:nth-child(5){animation-delay:280ms}
+@keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.reveal,.reveal.scroll-hide{opacity:1;transform:none;filter:none;transition:none}.reveal.visible .flow-step{animation:none}}
+@media(max-width:800px){
+  .hero-grid,.demo-grid,.cards,.flow,.usecases,.proscons{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:520px){
+  .container{padding:0 15px}
+  header{padding-top:45px}
+  section{padding:45px 0}
+  .stats{grid-template-columns:1fr 1fr}
+  th,td{padding:10px 8px;font-size:.82rem}
+  .demo-body{padding:17px}
+}
+
+/* ===== UI polish: accessible light theme + responsive layout ===== */
+:root.light{
+  --bg:#f7f9fc;
+  --surface:#ffffff;
+  --surface2:#f0f4f9;
+  --surface3:#e7edf5;
+  --border:#c9d4e2;
+  --text:#172033;
+  --muted:#52627a;
+  --blue:#1559b7;
+  --blue2:#dbeafe;
+  --orange:#a94f00;
+  --orange2:#fff0df;
+  --green:#087443;
+  --red:#b42318;
+  --shadow:0 14px 35px rgba(25,45,75,.10);
+}
+:root.light body{
+  background:radial-gradient(circle at 10% 0%,rgba(37,99,199,.08),transparent 30%),radial-gradient(circle at 90% 10%,rgba(201,107,22,.07),transparent 28%),var(--bg);
+}
+:root.light .badge{background:#fff;border-color:#c5d1df;color:#46566e}
+:root.light .team{color:#4c5c73}
+:root.light .card,.light .demo-shell,.light .q,.light .takeaway,.light .note,.light .log,.light table{background-color:#fff}
+:root.light td:first-child{color:#1d2a3d}
+:root.light .gradient{background:linear-gradient(90deg,#1559b7,#5b3fa8,#a94f00);-webkit-background-clip:text;background-clip:text}
+
+.theme-toggle{
+  width:44px;height:44px;padding:0;display:grid;place-items:center;
+  border-radius:50%;font-size:1.25rem;line-height:1;
+  transition:transform .2s ease,background-color .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+.theme-toggle:hover{transform:translateY(-2px) scale(1.04)}
+.theme-toggle:focus-visible{outline:3px solid color-mix(in srgb,var(--blue) 35%,transparent);outline-offset:3px}
+.btn:focus-visible,.modebar button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* Prevent wide content from breaking small screens */
+img,svg,video,iframe{max-width:100%;height:auto}
+pre{max-width:100%;overflow:auto}
+.demo-shell,.card,.flow-card,.q,.takeaway,.note{min-width:0}
+
+@media(max-width:900px){
+  .container{padding-left:20px;padding-right:20px}
+  header{padding:62px 0 34px}
+  .nav-inner{padding:8px 0;scrollbar-width:none}
+  .nav-inner::-webkit-scrollbar{display:none}
+  section{padding:52px 0}
+}
+@media(max-width:700px){
+  .container{padding-left:16px;padding-right:16px}
+  header{padding:58px 0 30px}
+  .theme-toggle{top:14px;right:16px;width:40px;height:40px;font-size:1.1rem}
+  .badge{font-size:.68rem;padding:6px 10px}
+  h1{font-size:clamp(2rem,11vw,3.1rem);margin-top:15px}
+  .subtitle{font-size:.96rem}
+  .team{font-size:.78rem;line-height:1.5}
+  section{padding:46px 0}
+  h2{line-height:1.15}
+  .hero-grid,.demo-grid,.cards,.flow,.usecases,.proscons{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{padding:18px}
+  .flow-card{padding:14px}
+  table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  th,td{padding:11px 12px}
+}
+@media(max-width:420px){
+  .container{padding-left:12px;padding-right:12px}
+  header{padding-top:54px}
+  .theme-toggle{right:12px}
+  .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .stat{padding:12px 10px}
+  .stat strong{font-size:1.1rem}
+  .demo-body{padding:14px}
+  .card{border-radius:14px;padding:16px}
+  .pill{font-size:.75rem}
+  .nav-inner a{font-size:.8rem;padding:7px 10px}
+}
+
+/* ===== Final light-mode readability fixes ===== */
+:root.light{
+  --lead:#3d4b61;
+  --list:#40516a;
+  --note-text:#3d4b61;
+  --code-text:#26364d;
+  --table-first:#1d2a3d;
+  --nav-glass:rgba(255,255,255,.94);
+  --input-bg:#f8fafc;
+  --log-bg:#f7f9fc;
+}
+:root:not(.light){
+  --lead:#c5cee0;
+  --list:#c6d0e3;
+  --note-text:#cbd5e8;
+  --code-text:#d8e2f4;
+  --table-first:#e8edf8;
+  --nav-glass:rgba(7,11,20,.86);
+  --input-bg:#080d17;
+  --log-bg:#080d17;
+}
+.lead{color:var(--lead)}
+ul,ol{color:var(--list)}
+.team{color:var(--lead)}
+nav{background:var(--nav-glass)}
+/* Active section navigation / scroll spy */
+.nav-inner a{
+  position:relative;
+  transition:background-color .2s ease,color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.nav-inner a:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.nav-inner a.active{
+  color:#fff;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  box-shadow:0 5px 18px rgba(37,99,235,.25);
+}
+.nav-inner a.active::after{
+  content:"";
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:3px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(255,255,255,.85);
+}
+:root.light .nav-inner a.active{
+  color:#12366b;
+  background:#dbeafe;
+  box-shadow:0 4px 14px rgba(37,99,235,.14);
+}
+:root.light .nav-inner a.active::after{background:#2563eb}
+@media(max-width:640px){
+  .nav-inner{
+    justify-content:flex-start;
+    gap:6px;
+    padding-left:12px;
+    padding-right:12px;
+  }
+  .nav-inner a{flex:0 0 auto}
+  .nav-inner a.active{padding-left:11px;padding-right:11px}
+  .nav-inner a.active::after{left:11px;right:11px}
+}
+
+/* Full-bleed navigation on wide screens: the bar reaches both viewport edges,
+   while its links remain neatly centered. */
+@media(min-width:641px){
+  nav{width:100%;}
+  .nav-inner{min-width:0;}
+}
+
+@media(min-width:1400px){
+  .nav-inner{padding-left:48px;padding-right:48px;gap:12px;}
+  .nav-inner a{padding-left:14px;padding-right:14px;}
+}
+
+#demoInput{background:var(--input-bg)}
+.log{background:var(--log-bg)}
+.note{color:var(--note-text)}
+pre{color:var(--code-text)}
+td:first-child{color:var(--table-first)}
+
+:root.light .gradient{
+  background:linear-gradient(90deg,#1559b7,#5b3fa8,#a94f00);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+:root.light .modebar{background:#edf2f8}
+:root.light .modebar button{color:#42526a}
+:root.light .modebar button.active.c{background:#dbeafe;color:#1559b7}
+:root.light .modebar button.active.u{background:#fff0df;color:#9a4700}
+:root.light .log div{border-bottom-color:#d9e1ec}
+:root.light .flow-card.c .flow-step{border-color:#6d96cf}
+:root.light .flow-card.u .flow-step{border-color:#c58a51}
+:root.light .pill{background:#eef2f7;color:#52627a}
+:root.light .btn.primary{color:#fff}
+:root.light .btn.orange{color:#fff}
+:root.light pre{background:#f6f8fb;border-color:#c9d4e2}
+:root.light .kw{color:#7a3db8}
+:root.light .fn{color:#245db3}
+:root.light .str{color:#087443}
+:root.light .tag{color:#b42318}
+
+/* Stronger readability for every paragraph and list inside light cards */
+:root.light p,
+:root.light li,
+:root.light .answer,
+:root.light .demo-label,
+:root.light .empty{color:#40516a}
+:root.light h1,
+:root.light h2,
+:root.light h3,
+:root.light strong{color:#172033}
+:root.light .controlled h3{color:#1559b7}
+:root.light .uncontrolled h3{color:#9a4700}
+
+/* Mobile readability */
+@media(max-width:700px){
+  :root.light .subtitle{color:#46566e}
+  :root.light .team{color:#52627a}
+}
+@media(max-width:700px){
+  :root.light .subtitle{color:#46566e}
+  :root.light .team{color:#52627a}
+}
+
+/* ===== Final interaction polish ===== */
+.card,.q,.stat,.takeaway,.demo-shell{
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease,background-color .35s ease,color .35s ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .card:hover,.q:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(0,0,0,.16)}
+  .stat:hover{transform:translateY(-2px)}
+  .btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+}
+.btn{transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.btn:active{transform:translateY(1px) scale(.98)}
+.modebar button{transition:transform .2s ease,background-color .25s ease,color .25s ease,border-color .25s ease}
+.modebar button:active{transform:scale(.98)}
+.flow-card{position:relative;overflow:hidden}
+.flow-card::before{
+  content:"";position:absolute;left:50%;top:22px;bottom:22px;width:2px;
+  background:linear-gradient(to bottom,transparent,var(--border),transparent);
+  transform:translateX(-50%);opacity:.7;pointer-events:none;
+}
+.flow-step,.arrow{position:relative;z-index:1}
+.reveal.visible .flow-step:nth-of-type(1){animation-delay:60ms}
+.reveal.visible .flow-step:nth-of-type(2){animation-delay:140ms}
+.reveal.visible .flow-step:nth-of-type(3){animation-delay:220ms}
+.reveal.visible .flow-step:nth-of-type(4){animation-delay:300ms}
+.reveal.visible .flow-step:nth-of-type(5){animation-delay:380ms}
+.reveal.visible .arrow{animation:arrowDrop .45s ease both}
+@keyframes arrowDrop{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+.nav-inner{scroll-snap-type:x proximity}
+.nav-inner a{scroll-snap-align:center}
+@media(prefers-reduced-motion:reduce){
+  .card,.q,.stat,.takeaway,.demo-shell,.btn,.modebar button{transition:none}
+  .reveal.visible .arrow{animation:none}
+  .nav-inner{scroll-behavior:auto}
+}.dark .nature-enhancements .water-ripple{opacity:.2}.dark .nature-enhancements .firefly{opacity:0;visibility:visible}.dark .nature-enhancements .moon-reflection{opacity:.55}
+</style>
+
+<style>
+  #submitBtn[hidden], #domStat[hidden], #knownStat[hidden] { display:none !important; }
+  @media (max-width: 560px){
+    .stats { grid-template-columns: 1fr; }
+  }
+
+/* ===== Final accessibility, navigation and performance polish ===== */
+html{scroll-padding-top:var(--nav-height,72px);overflow-x:hidden}
+body{overflow-x:hidden}
+.skip-link{
+  position:fixed;left:12px;top:10px;z-index:1000;transform:translateY(-160%);
+  padding:9px 13px;border-radius:9px;background:var(--text);color:var(--bg);font-weight:800;
+  box-shadow:var(--shadow);transition:transform .2s ease;
+}
+.skip-link:focus{transform:translateY(0)}
+.scroll-progress{
+  position:fixed;left:0;top:0;width:0;height:3px;z-index:1001;
+  background:linear-gradient(90deg,var(--blue),var(--orange));
+  box-shadow:0 0 12px rgba(98,160,255,.35);pointer-events:none;
+}
+.code-wrap{position:relative;min-width:0}
+.code-wrap pre{margin:0;padding-top:42px}
+.copy-code{
+  position:absolute;right:9px;top:9px;z-index:2;border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);border-radius:8px;padding:6px 9px;
+  font-size:.72rem;font-weight:800;line-height:1;transition:background-color .2s,color .2s,border-color .2s,transform .15s;
+}
+.copy-code:hover{color:var(--text);border-color:var(--blue);transform:translateY(-1px)}
+.copy-code.copied{color:var(--green);border-color:var(--green)}
+.back-top{
+  position:fixed;right:18px;bottom:18px;z-index:20;width:44px;height:44px;border-radius:50%;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1.2rem;font-weight:900;
+  box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);
+  transition:opacity .2s,visibility .2s,transform .2s,background-color .25s,border-color .25s;
+}
+.back-top.show{opacity:1;visibility:visible;transform:translateY(0)}
+.back-top:hover{border-color:var(--blue);transform:translateY(-2px)}
+:root.light .back-top{background:#fff}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.nav-inner a.active{z-index:1}
+/* Keep flow animation independent from the hidden scroll state. */
+.reveal.scroll-hide .flow-step{animation:none}
+@media(max-width:560px){
+  .back-top{right:12px;bottom:12px;width:40px;height:40px}
+  .copy-code{right:7px;top:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .skip-link,.back-top,.copy-code{transition:none}
+}
+</style>
+
+<style>
+/* Nature v6: extra life and atmosphere */
+.nature-enhancements{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:10}.leaf-fall{position:absolute;top:-30px;width:10px;height:7px;border-radius:80% 0 80% 0;background:#6f9d43;animation:leafFall linear infinite}
+.leaf-fall.l1{left:17%;animation-duration:9s}.leaf-fall.l2{left:42%;animation-duration:12s;animation-delay:2s}.leaf-fall.l3{left:72%;animation-duration:10s;animation-delay:4s}.leaf-fall.l4{left:86%;animation-duration:13s;animation-delay:1s}
+@keyframes leafFall{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:.9}50%{transform:translate(55px,45vh) rotate(180deg)}100%{transform:translate(-20px,105vh) rotate(420deg);opacity:0}}
+@keyframes wing{to{transform:scaleX(.35)}}.water-ripple{position:absolute;bottom:29%;left:43%;width:190px;height:36px;border-top:2px solid rgba(255,255,255,.35);border-radius:50%;animation:rippleMove 4s ease-in-out infinite}.water-ripple.r2{bottom:25%;left:51%;width:120px;animation-delay:1.5s}.water-ripple.r3{bottom:33%;left:35%;width:140px;animation-delay:2.5s}
+@keyframes rippleMove{0%,100%{transform:scaleX(.75);opacity:.25}50%{transform:scaleX(1.15);opacity:.65}}
+.mist{position:absolute;left:0;right:0;bottom:36%;height:45px;background:radial-gradient(ellipse at center,rgba(255,255,255,.22),transparent 70%);filter:blur(7px);animation:mistDrift 9s ease-in-out infinite alternate}.mist.m2{bottom:43%;animation-delay:3s;opacity:.55}
+@keyframes mistDrift{to{transform:translateX(45px);opacity:.35}}
+.firefly{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffe99b;box-shadow:0 0 9px 3px rgba(255,231,125,.7);opacity:0;animation:firefly 4s ease-in-out infinite}.firefly.f1{left:23%;bottom:28%;animation-delay:1s}.firefly.f2{left:31%;bottom:36%;animation-delay:2.4s}.firefly.f3{left:69%;bottom:30%;animation-delay:.5s}.firefly.f4{left:78%;bottom:40%;animation-delay:3s}.firefly.f5{left:58%;bottom:24%;animation-delay:1.8s}
+@keyframes firefly{0%,100%{opacity:0;transform:translate(0,0)}30%,70%{opacity:1}50%{transform:translate(22px,-18px)}}
+.moon-reflection{position:absolute;bottom:23%;left:57%;width:120px;height:75px;background:linear-gradient(to bottom,rgba(255,255,235,.38),transparent);filter:blur(3px);opacity:0;transform:skewX(-18deg);animation:moonReflect 3.5s ease-in-out infinite}
+@keyframes moonReflect{50%{opacity:.55;transform:skewX(-18deg) scaleX(1.15)}}
+:root.light .firefly,.light .firefly{opacity:0!important}.dark .moon-reflection{opacity:1}
+@media(prefers-reduced-motion:reduce){}
+</style>
+</head>
+
+<body>
+<a class="skip-link" href="#intro">Skip to content</a>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+<header>
+  <div class="hero-scene" aria-hidden="true">
+    <div class="sky-stars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="night-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="celestial moon"></div>
+    <div class="celestial sun"></div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="mountain back"></div>
+    <div class="mountain front"></div>
+    <div class="river"></div>
+    <div class="tree tree-1"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+    <div class="tree tree-2"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+    <div class="tree tree-3"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+    <div class="tree tree-4"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+    <div class="nature-life" aria-hidden="true">
+      <div class="day-life">
+        <div class="bird bird-1"></div><div class="bird bird-2"></div><div class="bird bird-3"></div><div class="bird bird-4"></div>
+        <div class="tree extra tree-extra-1"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+        <div class="tree extra tree-extra-2"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+        <div class="tree extra tree-extra-3"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+        <div class="tree extra tree-extra-4"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+        <div class="tree extra tree-extra-5"><span class="trunk"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></div>
+        <div class="hut"><div class="hut-roof"></div><div class="hut-body"><div class="hut-window"></div><div class="hut-door"></div></div><div class="hut-smoke"></div></div>
+        <div class="deer deer-1 deer-drink"><div class="body"><span class="spot s1"></span><span class="spot s2"></span><span class="spot s3"></span><span class="spot s4"></span></div><div class="neck"></div><div class="head"><span class="ear one"></span><span class="ear two"></span><span class="eye"></span><span class="muzzle"></span></div><span class="leg l1"><i></i></span><span class="leg l2"><i></i></span><span class="leg l3"><i></i></span><span class="leg l4"><i></i></span><span class="tail"></span><span class="antler"></span></div>
+        <div class="deer deer-2 deer-drink"><div class="body"><span class="spot s1"></span><span class="spot s2"></span><span class="spot s3"></span><span class="spot s4"></span></div><div class="neck"></div><div class="head"><span class="ear one"></span><span class="ear two"></span><span class="eye"></span><span class="muzzle"></span></div><span class="leg l1"><i></i></span><span class="leg l2"><i></i></span><span class="leg l3"><i></i></span><span class="leg l4"><i></i></span><span class="tail"></span><span class="antler"></span></div>
+        
+      </div>
+      <div class="night-life">
+        <div class="camp"><div class="man"><span class="head"></span><span class="body"></span><span class="arm"></span><span class="leg"></span><span class="leg r"></span></div><div class="fire"><span class="flame"></span><span class="flame small"></span></div><span class="camp-log a"></span><span class="camp-log b"></span></div>
+      </div>
+    </div>
+    <div class="haze"></div>
+<div class="nature-enhancements" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span>
+  <div class="leaf-fall l1"></div><div class="leaf-fall l2"></div><div class="leaf-fall l3"></div><div class="leaf-fall l4"></div>
+  <div class="water-ripple">></div><div class="water-ripple r2"></div><div class="water-ripple r3"></div>
+  <div class="mist"></div><div class="mist m2"></div>
+  <div class="firefly f1"></div><div class="firefly f2"></div><div class="firefly f3"></div><div class="firefly f4"></div><div class="firefly f5"></div>
+  <div class="moon-reflection"></div>
+</div>
+  </div>
+  <div class="container">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light and dark mode" title="Toggle light and dark mode"><span id="themeIcon" aria-hidden="true">🌙</span></button>
+    <span class="badge">REACT JS • GROUP 23</span>
+    <h1><span class="gradient">Controlled</span> vs <span class="gradient">Uncontrolled</span></h1>
+    <p class="subtitle">
+      Understand who owns a form input's value — React state or the browser DOM —
+      and see the difference in re-rendering with a live experiment.
+    </p>
+    <div class="team">
+      Shah Raj Bakulkumar • Sheliya Drashti Shaileshbhai • Thummar Hetviben Vipulkumar
+    </div>
+  </div>
+</header>
+
+<div id="navSpacer" aria-hidden="true"></div>
+<nav aria-label="Presentation sections">
+  <div class="container nav-inner">
+    <a href="#intro">Introduction</a>
+    <a href="#demo">Live Demo</a>
+    <a href="#controlled">Controlled</a>
+    <a href="#uncontrolled">Uncontrolled</a>
+    <a href="#keydetail">Key Detail</a>
+    <a href="#compare">Comparison</a>
+    <a href="#uses">Use Cases</a>
+    <a href="#viva">Viva</a>
+  </div>
+</nav>
+
+<main class="container">
+
+<section id="intro" class="reveal">
+  <div class="eyebrow">01 • Introduction</div>
+  <h2>Who owns the input's value?</h2>
+  <p class="lead">
+    In normal HTML, the browser keeps the input value inside the DOM.
+    React gives us two ways to manage it: React can become the single source
+    of truth, or the DOM can keep the value and React can read it when needed.
+  </p>
+
+  <div class="hero-grid reveal" style="--delay:100ms">
+    <article class="card controlled">
+      <h3>Controlled Component</h3>
+      <p>React state is the single source of truth.</p>
+      <span class="pill">useState</span>
+      <span class="pill">value</span>
+      <span class="pill">onChange</span>
+      <ul>
+        <li>Every change updates state.</li>
+        <li>State changes cause a component render.</li>
+        <li>The input displays the state value.</li>
+      </ul>
+    </article>
+
+    <article class="card uncontrolled">
+      <h3>Uncontrolled Component</h3>
+      <p>The DOM itself holds the input's current value.</p>
+      <span class="pill">useRef</span>
+      <span class="pill">ref</span>
+      <span class="pill">defaultValue</span>
+      <ul>
+        <li>Typing changes the DOM value directly.</li>
+        <li>Typing itself does not update React state.</li>
+        <li>A ref reads the value when required.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section id="demo" class="reveal">
+  <div class="eyebrow">02 • Interactive Playground</div>
+  <h2>Type and watch the data flow</h2>
+  <p class="lead">
+    This page is written in plain HTML, CSS and JavaScript, but it simulates the
+    React concepts. Switch modes and type one character at a time.
+  </p>
+
+  <div class="demo-shell reveal" style="--delay:100ms">
+    <div class="modebar">
+      <button id="controlledBtn" class="c active" aria-pressed="true" onclick="setMode('controlled')">⚛ Controlled</button>
+      <button id="uncontrolledBtn" class="u" aria-pressed="false" onclick="setMode('uncontrolled')">🌐 Uncontrolled</button>
+    </div>
+
+    <div class="demo-body">
+      <div class="demo-label" id="modeText">Controlled mode — React state owns the value</div>
+      <input id="demoInput" type="text" placeholder="Type your name..." autocomplete="off">
+
+      <div class="demo-actions">
+        <button id="submitBtn" class="btn primary" onclick="simulateSubmit()" hidden>Submit</button>
+        <button class="btn secondary" onclick="resetDemo()">Reset</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <small>Component renders</small>
+          <strong id="renderCount">1</strong>
+        </div>
+        <div class="stat" id="knownStat">
+          <small>React known value</small>
+          <strong id="knownValue">—</strong>
+        </div>
+        <div class="stat" id="domStat" hidden>
+          <small>DOM value (after Submit)</small>
+          <strong id="domValue">Not read yet</strong>
+        </div>
+      </div>
+
+      <div class="log" id="log">
+        <div class="empty">Start typing to see the data-flow events...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note demo-note" style="margin-top:18px">
+    <b>Important:</b> The counter is a teaching simulation. In real React,
+    rendering can be affected by batching and development Strict Mode.
+    The main exam concept is: controlled input state updates cause renders;
+    uncontrolled typing does not by itself cause a React render.
+  </div>
+</section>
+
+<section id="controlled" class="reveal">
+  <div class="eyebrow">03 • Controlled</div>
+  <h2>Controlled Component</h2>
+  <p class="lead">
+    If the input value comes from <code>useState</code> and changes through
+    <code>onChange</code>, React controls the input.
+  </p>
+
+  <div class="flow-card c reveal" style="margin-top:22px;--delay:80ms">
+    <div class="flow-step">User types</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">onChange fires</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">setName(value)</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">Re-render</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">value={name}</div>
+  </div>
+
+  <div class="demo-grid">
+    <div class="card">
+      <h3>React Example</h3>
+      <pre>import { useState } from "react";
+
+function NameForm() {
+  const [name, setName] = useState("");
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    console.log(name);
+  };
+
+  return (
+    &lt;form onSubmit={onSubmit}&gt;
+      &lt;input
+        value={name}
+        onChange={(e) =&gt;
+          setName(e.target.value)
+        }
+      /&gt;
+      &lt;button&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</pre>
+    </div>
+
+    <div class="card">
+      <h3>What happens?</h3>
+      <ol>
+        <li>User types a character.</li>
+        <li><code>onChange</code> runs.</li>
+        <li><code>setName()</code> updates state.</li>
+        <li>React renders the component again.</li>
+        <li><code>value={name}</code> displays the latest state.</li>
+      </ol>
+      <div class="note">
+        <b>Exam line:</b> If the value comes from <code>useState</code>,
+        it is a controlled component.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="uncontrolled" class="reveal">
+  <div class="eyebrow">04 • Uncontrolled</div>
+  <h2>Uncontrolled Component</h2>
+  <p class="lead">
+    The browser/DOM keeps the current input value. React uses a ref to read
+    that value when needed, usually during submission.
+  </p>
+
+  <div class="flow-card u reveal" style="margin-top:22px;--delay:80ms">
+    <div class="flow-step">User types</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">DOM stores value</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">No state update</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">No render from typing</div>
+    <span class="arrow" aria-hidden="true">↓</span>
+    <div class="flow-step">ref.current.value</div>
+  </div>
+
+  <div class="demo-grid">
+    <div class="card">
+      <h3>React Example</h3>
+      <pre>import { useRef } from "react";
+
+function NameForm() {
+  const nameRef = useRef(null);
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    console.log(nameRef.current.value);
+  };
+
+  return (
+    &lt;form onSubmit={onSubmit}&gt;
+      &lt;input
+        ref={nameRef}
+        defaultValue=""
+      /&gt;
+      &lt;button&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</pre>
+    </div>
+
+    <div class="card">
+      <h3>What happens?</h3>
+      <ol>
+        <li>User types into the input.</li>
+        <li>The DOM stores the current value.</li>
+        <li>No React state is updated by typing.</li>
+        <li>React does not re-render because of the typing.</li>
+        <li>On submit, the ref reads the current value.</li>
+      </ol>
+      <div class="note warning">
+        <b>Exam line:</b> If the value is accessed through a ref instead of
+        React state, it is generally an uncontrolled component.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="keydetail" class="reveal">
+  <div class="eyebrow">05 • Key Detail</div>
+  <h2><code>value</code> vs <code>defaultValue</code></h2>
+
+  <div class="demo-grid">
+    <div class="card controlled">
+      <h3><code>value</code> → Controlled</h3>
+      <pre>&lt;input
+  value={name}
+  onChange={e =&gt;
+    setName(e.target.value)
+  }
+/&gt;</pre>
+      <ul>
+        <li><code>value</code> comes from React state.</li>
+        <li><code>onChange</code> keeps state updated.</li>
+        <li>React controls what is displayed.</li>
+      </ul>
+    </div>
+
+    <div class="card uncontrolled">
+      <h3><code>defaultValue</code> → Uncontrolled</h3>
+      <pre>&lt;input
+  ref={nameRef}
+  defaultValue=""
+/&gt;</pre>
+      <ul>
+        <li><code>defaultValue</code> provides the initial value.</li>
+        <li>The DOM owns the current value afterwards.</li>
+        <li><code>ref.current.value</code> reads it later.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note warning" style="margin-top:18px">
+    <b>Remember:</b> Do not normally mix <code>value</code> and
+    <code>defaultValue</code> on the same input. A controlled input with
+    <code>value</code> but no <code>onChange</code> is effectively read-only.
+  </div>
+</section>
+
+<section id="compare" class="reveal">
+  <div class="eyebrow">06 • Comparison</div>
+  <h2>Side-by-side cheat sheet</h2>
+
+  <table>
+    <tr>
+      <th>Aspect</th>
+      <th>Controlled</th>
+      <th>Uncontrolled</th>
+    </tr>
+    <tr>
+      <td>Data storage</td>
+      <td class="c">React state</td>
+      <td class="u">DOM</td>
+    </tr>
+    <tr>
+      <td>Common tools</td>
+      <td class="c">useState + value + onChange</td>
+      <td class="u">useRef + ref + defaultValue</td>
+    </tr>
+    <tr>
+      <td>Value access</td>
+      <td class="c">State variable</td>
+      <td class="u">ref.current.value</td>
+    </tr>
+    <tr>
+      <td>Typing</td>
+      <td class="c">Updates React state</td>
+      <td class="u">Updates DOM</td>
+    </tr>
+    <tr>
+      <td>Re-render while typing</td>
+      <td class="c">Normally yes, after state update</td>
+      <td class="u">No render caused by typing itself</td>
+    </tr>
+    <tr>
+      <td>Validation</td>
+      <td class="c">Easy in real time</td>
+      <td class="u">Usually checked when needed</td>
+    </tr>
+    <tr>
+      <td>Code</td>
+      <td class="c">More setup</td>
+      <td class="u">Less setup</td>
+    </tr>
+    <tr>
+      <td>Common use</td>
+      <td class="c">Search, validation, multi-step forms</td>
+      <td class="u">Simple forms, file inputs, DOM libraries</td>
+    </tr>
+  </table>
+</section>
+
+<section id="uses" class="reveal">
+  <div class="eyebrow">07 • Practical Use</div>
+  <h2>Where can we use them?</h2>
+
+  <div class="usecases">
+    <div class="card controlled">
+      <h3>Controlled — examples</h3>
+      <ul>
+        <li><b>Live search:</b> filter results as the user types.</li>
+        <li><b>Login/signup:</b> show validation messages immediately.</li>
+        <li><b>Multi-step forms:</b> share form state between steps.</li>
+        <li><b>Character counter:</b> display remaining characters live.</li>
+      </ul>
+    </div>
+
+    <div class="card uncontrolled">
+      <h3>Uncontrolled — examples</h3>
+      <ul>
+        <li><b>File input:</b> file inputs are handled as uncontrolled inputs.</li>
+        <li><b>Simple forms:</b> read values only when submitting.</li>
+        <li><b>DOM-based libraries:</b> useful when another library owns the DOM.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="takeaway" style="margin-top:22px">
+    <h2>Key Takeaway</h2>
+    <p>
+      <b>Controlled:</b> React owns the value.<br>
+      <b>Uncontrolled:</b> DOM owns the value.
+    </p>
+    <p>
+      Choose based on what your form needs: live state, validation and
+      synchronization versus simpler DOM-based value handling.
+    </p>
+  </div>
+</section>
+
+<section id="viva" class="reveal">
+  <div class="eyebrow">08 • Viva / Exam Preparation</div>
+  <h2>Quick questions & answers</h2>
+
+  <div class="cards">
+    <div class="q">
+      <strong>1. What is a controlled component?</strong>
+      <div class="answer">A form input whose value is controlled by React state, usually using <code>useState</code>, <code>value</code>, and <code>onChange</code>.</div>
+    </div>
+
+    <div class="q">
+      <strong>2. What is an uncontrolled component?</strong>
+      <div class="answer">A form input whose current value is maintained by the DOM and accessed from React using a ref.</div>
+    </div>
+
+    <div class="q">
+      <strong>3. Which hook is commonly used for controlled inputs?</strong>
+      <div class="answer"><code>useState()</code>.</div>
+    </div>
+
+    <div class="q">
+      <strong>4. Which hook is commonly used for uncontrolled inputs?</strong>
+      <div class="answer"><code>useRef()</code>.</div>
+    </div>
+
+    <div class="q">
+      <strong>5. Does uncontrolled typing cause a React render?</strong>
+      <div class="answer">Not by itself. Changing the DOM input value does not update React state.</div>
+    </div>
+
+    <div class="q">
+      <strong>6. Why does a controlled input usually re-render?</strong>
+      <div class="answer">Typing triggers <code>onChange</code>, which calls a state setter such as <code>setName()</code>, causing React to render with the new state.</div>
+    </div>
+
+    <div class="q">
+      <strong>7. What is the difference between value and defaultValue?</strong>
+      <div class="answer"><code>value</code> is used to control the current value from state; <code>defaultValue</code> supplies an initial value for an uncontrolled input.</div>
+    </div>
+
+    <div class="q">
+      <strong>8. What is the easiest way to remember?</strong>
+      <div class="answer"><b>Controlled = React controls.</b> <b>Uncontrolled = DOM controls.</b></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="takeaway">
+    <h2>Final 10-second explanation</h2>
+    <p>
+      “In a controlled component, React state is the single source of truth.
+      Every input change updates state and normally causes a re-render.
+      In an uncontrolled component, the DOM stores the value, so typing itself
+      does not cause a React re-render. We use a ref to read the value when needed.”
+    </p>
+  </div>
+</section>
+
+</main>
+
+<button class="back-top" id="backTop" type="button" aria-label="Back to top" title="Back to top">↑</button>
+
+<footer>
+  <div class="container">
+    React JS • Controlled vs Uncontrolled Components • Group 23
+  </div>
+</footer>
+
+<script>
+let mode = "controlled";
+let renderCount = 1;
+let reactValue = "";
+let submittedDomValue = null;
+
+const input = document.getElementById("demoInput");
+const renderEl = document.getElementById("renderCount");
+const knownEl = document.getElementById("knownValue");
+const domEl = document.getElementById("domValue");
+const knownStat = document.getElementById("knownStat");
+const domStat = document.getElementById("domStat");
+const submitBtn = document.getElementById("submitBtn");
+const log = document.getElementById("log");
+const modeText = document.getElementById("modeText");
+const controlledBtn = document.getElementById("controlledBtn");
+const uncontrolledBtn = document.getElementById("uncontrolledBtn");
+const demoShell = document.querySelector(".demo-shell");
+
+demoShell.classList.add("mode-controlled");
+
+function setMode(newMode){
+  mode = newMode;
+  demoShell.classList.toggle("mode-controlled", mode === "controlled");
+  demoShell.classList.toggle("mode-uncontrolled", mode === "uncontrolled");
+
+  // Switching modes starts a fresh demonstration for that mode.
+  renderCount = 1;
+  reactValue = "";
+  submittedDomValue = null;
+  input.value = "";
+
+  controlledBtn.classList.toggle("active", mode === "controlled");
+  uncontrolledBtn.classList.toggle("active", mode === "uncontrolled");
+  controlledBtn.setAttribute("aria-pressed", String(mode === "controlled"));
+  uncontrolledBtn.setAttribute("aria-pressed", String(mode === "uncontrolled"));
+
+  modeText.textContent =
+    mode === "controlled"
+      ? "Controlled mode — React state owns the value"
+      : "Uncontrolled mode — the DOM owns the value";
+
+  // Show only the controls and value display that teach the current mode.
+  submitBtn.hidden = mode === "controlled";
+  knownStat.hidden = mode !== "controlled";
+  domStat.hidden = mode !== "uncontrolled";
+
+  updateStats();
+  clearLog();
+  addLog(
+    mode === "controlled"
+      ? "Mode changed → React state is now the source of truth."
+      : "Mode changed → DOM is now the source of truth. Type first, then press Submit to read it with ref.current.value."
+  );
+}
+
+function updateStats(){
+  renderEl.textContent = renderCount;
+
+  // Controlled: React state is the current source of truth.
+  knownEl.textContent = reactValue || "—";
+
+  // Uncontrolled: do NOT read input.value into the visible stat while typing.
+  // The value is shown only after Submit, when a ref would read the DOM.
+  domEl.textContent = submittedDomValue === null
+    ? "Not read yet"
+    : (submittedDomValue === "" ? "(empty)" : submittedDomValue);
+}
+
+function addLog(message){
+  const row = document.createElement("div");
+  row.innerHTML = message;
+  if(log.querySelector(".empty")) log.innerHTML = "";
+  log.prepend(row);
+  while(log.children.length > 7){
+    log.removeChild(log.lastChild);
+  }
+}
+
+function clearLog(){
+  log.innerHTML = '<div class="empty">Start typing to see the data-flow events...</div>';
+}
+
+input.addEventListener("input", function(){
+  if(mode === "controlled"){
+    // Controlled React flow:
+    // input -> onChange -> setName(value) -> React re-render -> value={name}
+    reactValue = input.value;
+    renderCount++;
+
+    addLog(
+      '<span class="event">onChange</span> → ' +
+      'setName("' + escapeHTML(input.value) + '") → ' +
+      '<span class="event">re-render</span>'
+    );
+  }else{
+    // Uncontrolled flow:
+    // the browser/DOM changes the input value; React state is untouched.
+    // Therefore typing alone must NOT update the DOM Value card or render count.
+    addLog(
+      '<span class="event">DOM input</span> → value stored in DOM → ' +
+      '<span class="event">no React render</span>'
+    );
+  }
+
+  updateStats();
+});
+
+function simulateSubmit(){
+  if(mode !== "uncontrolled") return;
+
+  // This represents ref.current.value: React reads the DOM only now.
+  submittedDomValue = input.value;
+
+  const displayValue = submittedDomValue === "" ? "(empty)" : submittedDomValue;
+  addLog(
+    '<span class="event">Submit</span> → ref.current.value → "' +
+    escapeHTML(displayValue) + '"'
+  );
+
+  // Reading a ref does not itself cause a React render.
+  updateStats();
+}
+
+function resetDemo(){
+  const hadValue = input.value !== "" || reactValue !== "" || submittedDomValue !== null;
+
+  input.value = "";
+  reactValue = "";
+  submittedDomValue = null;
+
+  if(mode === "controlled"){
+    // setName("") would cause one React render when the value actually changes.
+    if(hadValue) renderCount++;
+  }else{
+    // Clearing an uncontrolled DOM input does not itself cause a React render.
+    renderCount = 1;
+  }
+
+  updateStats();
+  clearLog();
+  addLog(
+    mode === "controlled"
+      ? (hadValue ? 'Reset → setName("") → re-render' : "Reset → value already empty; no state change")
+      : "Reset → DOM input cleared; no React render caused by DOM reset."
+  );
+}
+
+function escapeHTML(value){
+  return value
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+/* Direction-aware scroll reveal
+   Down: components reveal as they enter the viewport.
+   Up: components leaving the viewport are hidden again, so the presentation can replay.
+   Reduced-motion users get a static, fully visible page. */
+const revealItems=[...document.querySelectorAll(".reveal")];
+let lastScrollY=window.scrollY;
+let scrollDirection="down";
+let directionTick=false;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function updateScrollDirection(){
+  const y=window.scrollY;
+  if(y>lastScrollY+1) scrollDirection="down";
+  else if(y<lastScrollY-1) scrollDirection="up";
+  lastScrollY=y;
+}
+window.addEventListener("scroll",()=>{
+  if(directionTick) return;
+  directionTick=true;
+  requestAnimationFrame(()=>{updateScrollDirection();directionTick=false;});
+},{passive:true});
+
+if(!reduceMotion && "IntersectionObserver" in window){
+  const revealObserver=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const el=entry.target;
+      if(entry.isIntersecting){
+        el.classList.add("visible");
+        el.classList.remove("scroll-hide");
+      }else if(scrollDirection==="up" && entry.boundingClientRect.bottom<0){
+        // When scrolling upward, hide the component after it leaves through the top.
+        el.classList.remove("visible");
+        el.classList.add("scroll-hide");
+      }
+    });
+  },{threshold:.12,rootMargin:"0px 0px -55px 0px"});
+
+  revealItems.forEach((el,i)=>{
+    if(!el.style.getPropertyValue("--delay")) el.style.setProperty("--delay",Math.min(i*35,180)+"ms");
+    revealObserver.observe(el);
+  });
+}else{
+  revealItems.forEach(el=>el.classList.add("visible"));
+}
+
+/* Fixed-on-arrival navbar. It becomes fixed exactly when its original top
+   reaches the viewport top, then stays fixed for the rest of the page. */
+const siteNav=document.querySelector('nav');
+const navSpacer=document.getElementById('navSpacer');
+let navStartY=0;
+let navHeight=0;
+let navFixed=false;
+function measureNav(){
+  if(!siteNav) return;
+  navHeight=siteNav.offsetHeight;
+  if(!navFixed){
+    navStartY=siteNav.getBoundingClientRect().top + window.scrollY;
+  }
+  document.documentElement.style.setProperty('--nav-height',navHeight+'px');
+}
+function setNavFixed(fixed){
+  if(!siteNav || !navSpacer || navFixed===fixed) return;
+  navFixed=fixed;
+  siteNav.classList.toggle('is-fixed',fixed);
+  navSpacer.classList.toggle('is-active',fixed);
+  if(fixed){
+    navSpacer.style.height=navHeight+'px';
+  }else{
+    navSpacer.style.height='0px';
+  }
+}
+function updateNavPosition(){
+  if(!siteNav) return;
+  if(!navFixed){
+    if(window.scrollY >= navStartY) setNavFixed(true);
+  }else if(window.scrollY < navStartY){
+    setNavFixed(false);
+    measureNav();
+  }
+}
+measureNav();
+window.addEventListener('scroll',updateNavPosition,{passive:true});
+window.addEventListener('resize',()=>{
+  const wasFixed=navFixed;
+  if(wasFixed){
+    siteNav.classList.remove('is-fixed');
+    navSpacer.classList.remove('is-active');
+    navSpacer.style.height='0px';
+    navFixed=false;
+  }
+  measureNav();
+  if(wasFixed && window.scrollY >= navStartY) setNavFixed(true);
+  updateNavPosition();
+},{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{
+  const wasFixed=navFixed;
+  if(wasFixed){
+    siteNav.classList.remove('is-fixed');
+    navSpacer.classList.remove('is-active');
+    navSpacer.style.height='0px';
+    navFixed=false;
+  }
+  measureNav();
+  if(wasFixed && window.scrollY >= navStartY) setNavFixed(true);
+  updateNavPosition();
+},150),{passive:true});
+
+/* Scroll spy: exactly one section is active. */
+const navLinks=[...document.querySelectorAll('.nav-inner a')];
+const trackedSections=navLinks
+  .map(link=>document.querySelector(link.getAttribute('href')))
+  .filter(Boolean);
+let manualNavLockUntil=0;
+
+function setActiveNav(id, shouldScrollNav=false){
+  navLinks.forEach(link=>{
+    const active=link.getAttribute('href')==='#'+id;
+    link.classList.toggle('active',active);
+    if(active) link.setAttribute('aria-current','page');
+    else link.removeAttribute('aria-current');
+    if(active && shouldScrollNav){
+      link.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest',inline:'center'});
+    }
+  });
+}
+
+function updateActiveSection(){
+  if(!trackedSections.length || Date.now()<manualNavLockUntil) return;
+  const nav=siteNav;
+  const marker=(nav ? nav.getBoundingClientRect().bottom : 0)+34;
+  let current=trackedSections[0];
+  for(const section of trackedSections){
+    if(section.getBoundingClientRect().top<=marker) current=section;
+    else break;
+  }
+  setActiveNav(current.id);
+}
+
+let spyTick=false;
+function requestSpyUpdate(){
+  if(spyTick) return;
+  spyTick=true;
+  requestAnimationFrame(()=>{updateActiveSection();spyTick=false;});
+}
+window.addEventListener('scroll',requestSpyUpdate,{passive:true});
+window.addEventListener('resize',requestSpyUpdate);
+window.addEventListener('orientationchange',()=>setTimeout(requestSpyUpdate,120));
+
+navLinks.forEach(link=>{
+  link.addEventListener('click',()=>{
+    const id=link.getAttribute('href').slice(1);
+    manualNavLockUntil=Date.now()+900;
+    setActiveNav(id,true);
+    setTimeout(requestSpyUpdate,950);
+  });
+});
+
+/* Reading progress + back-to-top. */
+const progress=document.getElementById('scrollProgress');
+const backTop=document.getElementById('backTop');
+let chromeTick=false;
+function updateScrollChrome(){
+  const doc=document.documentElement;
+  const max=doc.scrollHeight-window.innerHeight;
+  const ratio=max>0 ? Math.min(1,Math.max(0,window.scrollY/max)) : 0;
+  progress.style.width=(ratio*100)+'%';
+  backTop.classList.toggle('show',window.scrollY>520);
+}
+function requestScrollChrome(){
+  if(chromeTick) return;
+  chromeTick=true;
+  requestAnimationFrame(()=>{updateScrollChrome();chromeTick=false;});
+}
+window.addEventListener('scroll',requestScrollChrome,{passive:true});
+window.addEventListener('resize',requestScrollChrome);
+backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'}));
+
+/* Copy buttons: native Clipboard API with a safe fallback. */
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve,reject)=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');resolve();}catch(e){reject(e)}
+    ta.remove();
+  });
+}
+
+document.querySelectorAll('pre').forEach(pre=>{
+  const wrap=document.createElement('div');
+  wrap.className='code-wrap';
+  pre.parentNode.insertBefore(wrap,pre);
+  wrap.appendChild(pre);
+  const btn=document.createElement('button');
+  btn.type='button';btn.className='copy-code';btn.textContent='Copy';
+  btn.setAttribute('aria-label','Copy code to clipboard');
+  wrap.appendChild(btn);
+  btn.addEventListener('click',async()=>{
+    try{
+      await copyText(pre.textContent);
+      btn.textContent='✓ Copied';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},1400);
+    }catch{
+      btn.textContent='Copy failed';
+      setTimeout(()=>btn.textContent='Copy',1400);
+    }
+  });
+});
+
+/* Light / Dark mode */
+const themeIcon=document.getElementById("themeIcon");
+const themeToggle=document.getElementById("themeToggle");
+function getSavedTheme(){
+  try{return localStorage.getItem("reactTheme")}catch{return null}
+}
+function saveTheme(theme){
+  try{localStorage.setItem("reactTheme",theme)}catch{}
+}
+function applyTheme(theme){
+  const safeTheme=theme==="light"?"light":"dark";
+  document.documentElement.classList.toggle("light",safeTheme==="light");
+  const themeMeta=document.querySelector('meta[name="theme-color"]');
+  if(themeMeta) themeMeta.setAttribute("content",safeTheme==="light"?"#f7f9fc":"#070b14");
+  themeIcon.textContent=safeTheme==="light"?"☀️":"🌙";
+  themeToggle.setAttribute("aria-label",safeTheme==="light"?"Switch to dark mode":"Switch to light mode");
+  themeToggle.setAttribute("title",safeTheme==="light"?"Switch to dark mode":"Switch to light mode");
+  saveTheme(safeTheme);
+}
+function toggleTheme(){
+  const current=document.documentElement.classList.contains("light")?"light":"dark";
+  applyTheme(current==="light"?"dark":"light");
+}
+
+applyTheme(getSavedTheme()||"dark");
+updateStats();
+setTimeout(()=>{requestSpyUpdate();updateScrollChrome()},60);
+</script>
+
+
+</body>
+</html>
